@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>View Reservations</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <!-- Latest compiled and minified JavaScript -->
+    <!--  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script> -->
+
+    <script src="https://code.jquery.com/jquery.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="text-center"><span class="glyphicon glyphicon-fire"></span> Hot Restaurant</h1>
+            <hr>
+            <h2 class="text-center">Current Reservations and Waiting List!</h2>
+            <br>
+            <div class="text-center">
+                <a href="/reservation">
+                    <button type="button" class="btn btn-lg btn-danger"><span class="glyphicon glyphicon-credit-card"></span> Make Reservation</button>
+                </a>
+                <a href="/">
+                    <button type="button" class="btn btn-lg btn-default"><span class="glyphicon glyphicon-home"></span></button>
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <!-- Current Tables in Use -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Current Reservations</h4>
+                    </div>
+                    <div class="panel-body" id="tableSection">
+                        <!-- ENTRIES WILL BE DYNAMICALLY CREATED AND ADDED INTO THIS SECTION
+                        BASED ON THE DATA WE GET BACK FROM THE API OR SERVER -->
+
+                        <!-- <div class="well" id="tableWell-01">
+                            <h2><span class="label label-primary">1</span> res. 1</h2>
+                        </div>
+                        <div class="well" id="tableWell-11">
+                            <h2><span class="label label-primary">2</span> res. 2 </h2>
+                        </div>
+                        <div class="well" id="tableWell-21">
+                            <h2><span class="label label-primary">3</span> res. 3</h2>
+                        </div> -->
+                    </div>
+                </div>
+                <!-- Waiting List Panel -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Waiting List</h4>
+                    </div>
+                    <div class="panel-body" id="waitlistSection">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+            <div class="container">
+              <p>Control Panel</p>
+              <!--  NOTE: it is important that the href of the Clear Table link is set to #, otherwise upon clicking, it will try redirecting us to /api/delete, which will give us an error, since there is no site for such path. instead, we make an ajax call to that path once the link is clicked. this will successfully clear our records without trying to take us somewhere else. -->
+              <p><a href="#" id="clear">Clear Table</a> | <a href="/api/tables">API Table Link</a> | <a href="/api/waitlist">API Wait List</a></p>
+          </div>
+      </footer>
+  </body>
+
+  </html>
+
+  <script type="text/javascript">
+
+  function runTableQuery(){
+
+    var currentURL = window.location.origin;
+
+    $.ajax({url: currentURL + "/api/tables", method: "GET"})
+    .done(function(tableData) {
+
+        console.log("------------------------------------");
+        console.log("URL: " + currentURL + "/api/tables");
+        console.log("------------------------------------");
+
+        console.log(tableData);
+        console.log("------------------------------------")
+
+        console.log('about to enter for loop...');
+        for (var i=0; i<tableData.length; i++){
+
+            var tableSection = $("<div>");
+            tableSection.addClass('well');
+            tableSection.attr('id', 'tableWell-' + i+1)
+            $('#tableSection').append(tableSection);
+            var tableNumber = i + 1;
+            $("#tableWell-"+ i+1).append('<h2><span class="label label-primary">' + tableNumber + "</span> | " + tableData[i].uniqueId + "</h2>");
+        }
+    });
+};
+
+function runWaitListQuery(){
+
+    var currentURL = window.location.origin;
+
+    $.ajax({url: currentURL + "/api/waitlist", method: "GET"})
+    .done(function(waitlistData) {
+
+        console.log("------------------------------------");
+        console.log("URL: " + currentURL + "/api/waitlist");
+        console.log("------------------------------------");
+
+        console.log(waitlistData);
+        console.log("------------------------------------")
+
+        for (var i=0; i<waitlistData.length; i++){
+
+            var waitlistSection = $("<div>");
+            waitlistSection.addClass('well');
+            waitlistSection.attr('id', 'waitlistWell-' + i+1)
+            $('#waitlistSection').append(waitlistSection);
+            var tableNumber = i + 1;
+
+            $("#waitlistWell-"+ i+1).append('<h2><span class="label label-primary">' + tableNumber + "</span> | " + waitlistData[i].uniqueId + "</h2>");
+        }
+    });
+};
+
+function clearTable(){
+    var currentURL = window.location.origin;
+    $.ajax({url: currentURL + "/api/delete", method: "DELETE"})
+};
+
+$("#clear").on('click', function(){
+        alert("Clearing...");
+        clearTable();
+        // Refresh the page after data is cleared
+        location.reload();
+    });
+
+runTableQuery();
+runWaitListQuery();
+</script>
